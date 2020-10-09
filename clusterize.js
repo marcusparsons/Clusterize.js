@@ -1,7 +1,7 @@
 /* Clusterize.js - v0.18.1 - 2018-01-02
  http://NeXTs.github.com/Clusterize.js/
  Copyright (c) 2015 Denis Lukov; Licensed GPLv3 */
-(function(name, definition) {
+;(function(name, definition) {
     if (typeof module != 'undefined') module.exports = definition();
     else if (typeof define == 'function' && typeof define.amd == 'object') define(definition);
     else this[name] = definition();
@@ -107,8 +107,6 @@
 
         //mutate DOM for persistence
         if (self.options.persistence) {
-            console.log('Clusterize: starting persistence DOM mutation');
-
             self.persistenceFn = function () {
                 var currentRows = self.content_elem.querySelectorAll('tr:not(.clusterize-extra-row)');
 
@@ -129,7 +127,6 @@
                     }
 
                     if (!shouldPersist) {
-                        console.log('Clusterize: shutting down clusterize persistence DOM mutation, no inputs/textareas need DOM mutation')
                         clearInterval(self.persistenceInterval);
                     }
                     else {                        
@@ -222,7 +219,6 @@
                 }
 
                 if (shouldPersist) {
-                    console.log('Clusterize: running persistence DOM mutation');
                     self.persistenceInterval = setInterval(self.persistenceFn, self.options.persistenceTimeInterval);
                 }
             }
@@ -245,6 +241,21 @@
             rows = where == 'append' ?
                 rows.concat(new_rows) :
                 new_rows.concat(rows);
+            
+            if (self.options.persistence) {
+                //For persistence
+                var shouldPersist = false;
+                for (let i = 0, ii = rows.length; i < ii; i++) {
+                    if (rows[i].indexOf('<input') > -1 || rows[i].indexOf('<textarea') > -1) {  
+                        shouldPersist = true; 
+                        break;
+                    }
+                }
+
+                if (shouldPersist) {
+                    self.persistenceInterval = setInterval(self.persistenceFn, self.options.persistenceTimeInterval);
+                }
+            }
             self.insertToDOM(rows, cache);
         }
         self.append = function(rows) {
